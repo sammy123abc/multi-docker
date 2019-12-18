@@ -1,0 +1,21 @@
+sudo: required
+services:
+  - docker
+before_install:
+  - docker build -t samarthabcd/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run samarthabcd/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t samarthabcd/multi-client ./client
+  - docker build -t samarthabcd/multi-nginx ./nginx
+  - docker build -t samarthabcd/multi-server ./server
+  - docker build -t samarthabcd/multi-worker ./worker
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  - docker push samarthabcd/multi-client
+  - docker push samarthabcd/multi-nginx
+  - docker push samarthabcd/multi-server
+  - docker push samarthabcd/multi-worker
